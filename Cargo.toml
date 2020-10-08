@@ -1,0 +1,30 @@
+[package]
+name = "mmrconv"
+version = "0.1.0"
+authors = ["Aki <wuminzhe@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+hex = "0.4.2"
+sp-core = { version = "2.0", path = "/Users/itering/Projects/paritytech/substrate/primitives/core" }
+sp-runtime = { version = "2.0", path = "/Users/itering/Projects/paritytech/substrate/primitives/runtime" }
+ckb-merkle-mountain-range = { version = "0.3.1", path = "/Users/itering/Projects/wuminzhe/merkle-mountain-range" }
+ws = { git = "https://github.com/housleyjk/ws-rs.git", features = ["ssl"] }
+log = "0.4.0"
+env_logger = "0.7.1"
+url = "2.0.0"
+json = { git = "https://github.com/maciejhirsz/json-rust.git" }
+
+[dependencies.openssl]
+optional = true
+version = "0.10"
+
+[features]
+default = ["ssl"]
+ssl = ["openssl"]
+
+[[bin]]
+name = "mmrconv"
+path = "src/main.rs"
