@@ -54,10 +54,19 @@ impl ws::Handler for Client {
                              .unwrap()[..])
                     )
                     .collect();
-                let converted_proof = convert(leaves, mmr_size.parse().unwrap(), proof).unwrap();
-                println!("mmr_size: {}", converted_proof.mmr_size);
-                println!("peaks   : {:?}", converted_proof.peaks);
-                println!("siblings: {:?}", converted_proof.siblings);
+
+                println!("--- original ---");
+                println!("  mmr_size: {}",   mmr_size);
+                println!("  leaves  : {:?}", leaves.clone());
+                println!("  proof   : {:?}\n", proof);
+
+                let converted_proof = convert(leaves.clone(), mmr_size.parse().unwrap(), proof).unwrap();
+                println!("--- converted ---");
+                println!("  mmr_size: {}",   converted_proof.mmr_size);
+                println!("  leaves  : {:?}", leaves);
+                println!("  siblings: {:?}", converted_proof.siblings);
+                println!("  peaks   : {:?}", converted_proof.peaks);
+
                 self.out.close(ws::CloseCode::Normal)
             },
             _ => {

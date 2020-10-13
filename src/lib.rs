@@ -38,6 +38,18 @@ fn contains(hashes: &Vec<H256>, target: &H256) -> bool {
     hashes.iter().find(|&x| x == target).is_some()
 }
 
+pub fn merge(hashes: Vec<H256>) -> H256 {
+    let mut result = hashes[0];
+    for hash in hashes {
+        if hash != result {
+            result = BlakeTwo256::hash_of(&(result, hash));
+        }
+
+    }
+
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use crate::H256;
