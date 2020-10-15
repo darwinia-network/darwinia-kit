@@ -1,7 +1,7 @@
 #![feature(array_methods)]
 
 use ckb_merkle_mountain_range::{MMR, MMRStore, util::MemStore};
-use mmrconv::MMRMerge;
+use darwinia_misc_toolset::MMRMerge;
 use sp_runtime::traits::{BlakeTwo256, Hash};
 use sp_core::H256;
 
@@ -43,6 +43,6 @@ fn main() {
         ),
 
     ];
-    let result = mmrconv::merge(hashes);
+    let result = darwinia_misc_toolset::merge(hashes);
     println!("{:?}", result);
 }

@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate log;
 use std::env;
-use mmrconv::{convert, Result};
+use darwinia_misc_toolset::{convert, Result};
 use sp_core::H256;
 
 #[cfg(feature = "ssl")]
@@ -10,6 +10,14 @@ use openssl::ssl::{SslConnector, SslMethod, SslStream, SslVerifyMode};
 use ws::util::TcpStream;
 
 use ckb_merkle_mountain_range::leaf_index_to_pos;
+
+// fn get_siblings(left_leaf_pos: u64, right_leaf_pos: u64, mmr_size: u64) {
+//     let mut height = 1;
+//     let mut new = right_leaf_pos + 1;
+//     while new < (mmr_size - 1) {
+//         (2 << height) - 1
+//     }
+// }
 
 #[cfg(feature = "ssl")]
 struct Client {
@@ -59,6 +67,19 @@ impl ws::Handler for Client {
                 println!("  mmr_size: {}",   mmr_size);
                 println!("  leaves  : {:?}", leaves.clone());
                 println!("  proof   : {:?}\n", proof);
+
+                // let (left_pos, right_pos) = if self.leaf.0.is_even() {
+                //     let left_leaf_pos = leaf_index_to_pos(self.leaf.0);
+                //     let right_leaf_pos = left_leaf_pos + 1;
+                //     get_siblings(left_leaf_pos, right_leaf_pos, mmr_size);
+                //     (left_index, right_index)
+                // } else {
+                //     let right_index = self.leaf.0;
+                //     let left_index = right_index - 1;
+                //     (left_index, right_index)
+                // };
+                //
+                // let opponent = if leaf_index.is_even() { leaf_index + 1 } else { leaf_index - 1 };
 
                 let converted_proof = convert(leaves.clone(), mmr_size.parse().unwrap(), proof).unwrap();
                 println!("--- converted ---");

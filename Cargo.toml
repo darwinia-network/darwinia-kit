@@ -1,5 +1,5 @@
 [package]
-name = "mmrconv"
+name = "darwinia-misc-toolset"
 version = "0.1.0"
 authors = ["Aki <wuminzhe@gmail.com>"]
 edition = "2018"
@@ -26,9 +26,13 @@ default = ["ssl"]
 ssl = ["openssl"]
 
 [[bin]]
-name = "mmrconv"
-path = "src/main.rs"
+name = "mmrproof"
+path = "src/mmrproof.rs"
 
 [[bin]]
 name = "mmrprint"
-path = "src/print.rs"
+path = "src/mmrprint.rs"
+
+[[bin]]
+name = "20to32"
+path = "src/20to32.rs"
