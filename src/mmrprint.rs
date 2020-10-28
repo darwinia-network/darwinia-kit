@@ -33,16 +33,19 @@ fn main() {
     let hashes = vec![
         H256::from_slice(
             &hex::decode(
-                "9197278f146f85de21a738c806c24e0b18b266d45fc33cbb922e9534ab26dacd"
+                "986958dcc848e6f2305f6932713036c58814640d82f5bef53d09bfe27fa5da54"
             ).unwrap()[..]
         ),
         H256::from_slice(
             &hex::decode(
-                "488e9565547fec8bd36911dc805a7ed9f3d8d1eacabe429c67c6456933c8e0a6"
+                "e60e09a2ecf78dba9848d05971de3d0fbdc4ccf7fac2466b2325260e10231c39"
             ).unwrap()[..]
         ),
+
 
     ];
     let result = darwinia_misc_toolset::merge(hashes);
     println!("{:?}", result);
+
+
 }
