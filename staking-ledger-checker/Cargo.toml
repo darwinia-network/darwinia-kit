@@ -1,0 +1,12 @@
+[package]
+authors = ["Xavier Lau <c.estlavie@icloud.com>"]
+edition = "2018"
+name    = "staking-ledger-checker"
+version = "0.1.0"
+
+[dependencies]
+array-bytes = "*"
+colored     = "*"
+serde       = { version = "*", features = ["derive"] }
+serde_json  = "*"
+subcryptor  = "*"
