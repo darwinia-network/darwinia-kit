@@ -1,9 +1,9 @@
 #![feature(array_methods)]
 
-use ckb_merkle_mountain_range::{MMR, MMRStore, util::MemStore};
+use ckb_merkle_mountain_range::{util::MemStore, MMRStore, MMR};
 use darwinia_misc_toolset::MMRMerge;
-use sp_runtime::traits::{BlakeTwo256, Hash};
 use sp_core::H256;
+use sp_runtime::traits::{BlakeTwo256, Hash};
 
 use ckb_merkle_mountain_range::pos_height_in_tree;
 
@@ -29,23 +29,17 @@ use ckb_merkle_mountain_range::pos_height_in_tree;
 // }
 
 fn main() {
-    // build_mmr(11);
-    let hashes = vec![
-        H256::from_slice(
-            &hex::decode(
-                "986958dcc848e6f2305f6932713036c58814640d82f5bef53d09bfe27fa5da54"
-            ).unwrap()[..]
-        ),
-        H256::from_slice(
-            &hex::decode(
-                "e60e09a2ecf78dba9848d05971de3d0fbdc4ccf7fac2466b2325260e10231c39"
-            ).unwrap()[..]
-        ),
-
-
-    ];
-    let result = darwinia_misc_toolset::merge(hashes);
-    println!("{:?}", result);
-
-
+	// build_mmr(11);
+	let hashes = vec![
+		H256::from_slice(
+			&hex::decode("986958dcc848e6f2305f6932713036c58814640d82f5bef53d09bfe27fa5da54")
+				.unwrap()[..],
+		),
+		H256::from_slice(
+			&hex::decode("e60e09a2ecf78dba9848d05971de3d0fbdc4ccf7fac2466b2325260e10231c39")
+				.unwrap()[..],
+		),
+	];
+	let result = darwinia_misc_toolset::merge(hashes);
+	println!("{:?}", result);
 }
