@@ -17,7 +17,8 @@ fn main() {
 			active_kton,
 			ref kton_staking_lock,
 		} = ledger;
-		let ss58_address = subcryptor::into_ss58_address(array_bytes::bytes_unchecked(stash), 18);
+		let ss58_address =
+			subcryptor::into_ss58_address(array_bytes::hex2bytes_unchecked(stash), 18);
 		let mut error = false;
 
 		if active_ring != ring_staking_lock.staking_amount {
