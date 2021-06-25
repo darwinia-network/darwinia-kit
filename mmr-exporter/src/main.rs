@@ -27,31 +27,41 @@ impl fmt::Display for Hash {
 
 #[async_std::main]
 async fn main() {
+	let args = env::args().collect::<Vec<_>>();
+	let last_position = args
+		.get(1)
+		.map(|s| s.parse::<NodeIndex>().unwrap_or(10))
+		.unwrap_or(10);
+	let uri = args
+		.get(2)
+		.map(ToOwned::to_owned)
+		.unwrap_or("https://rpc.darwinia.network".into());
+	let mmr_storage_prefix: &[u8] = if uri.contains("pangolin") {
+		b"HeaderMMR"
+	} else {
+		b"DarwiniaHeaderMMR"
+	};
+
+	println!("Connect to {}", &uri);
+
 	let mut file = File::create("mmr.json").unwrap();
 
 	write!(file, "[").unwrap();
 
-	for position in 0..env::args()
-		.collect::<Vec<_>>()
-		.get(1)
-		.map(|s| s.parse::<NodeIndex>().unwrap_or(10))
-		.unwrap_or(10)
-	{
+	for position in 0..last_position {
 		let storage_key = substorager::hex_storage_map_key_with_prefix(
 			"0x",
-			b"DarwiniaHeaderMMR",
+			mmr_storage_prefix,
 			b"MMRNodeList",
 			(StorageHasher::Identity, position.to_ne_bytes()),
 		);
-		let response = subrpcer::send_rpc(
-			"https://rpc.darwinia.network",
-			state::get_storage(storage_key, <Option<()>>::None),
-		)
-		.await
-		.unwrap()
-		.text()
-		.await
-		.unwrap();
+		let response =
+			subrpcer::send_rpc(&uri, state::get_storage(storage_key, <Option<()>>::None))
+				.await
+				.unwrap()
+				.text()
+				.await
+				.unwrap();
 		let hash = Hash::from_hex_unchecked(
 			serde_json::from_str::<Value>(&response).unwrap()["result"]
 				.as_str()
