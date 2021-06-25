@@ -1,4 +1,5 @@
 [workspace]
 members = [
-	"staking-ledger-checker"
+	"mmr-exporter",
+	"staking-ledger-checker",
 ]
