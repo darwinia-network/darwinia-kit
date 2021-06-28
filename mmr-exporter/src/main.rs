@@ -36,11 +36,10 @@ async fn main() {
 		.get(2)
 		.map(ToOwned::to_owned)
 		.unwrap_or("https://rpc.darwinia.network".into());
-	let mmr_storage_prefix: &[u8] = if uri.contains("pangolin") {
-		b"HeaderMMR"
-	} else {
-		b"DarwiniaHeaderMMR"
-	};
+	let mmr_storage_prefix = args
+		.get(3)
+		.map(|s| s.as_bytes().to_vec())
+		.unwrap_or(b"HeaderMMR".to_vec());
 
 	println!("Connect to {}", &uri);
 
@@ -51,7 +50,7 @@ async fn main() {
 	for position in 0..last_position {
 		let storage_key = substorager::hex_storage_map_key_with_prefix(
 			"0x",
-			mmr_storage_prefix,
+			&mmr_storage_prefix,
 			b"MMRNodeList",
 			(StorageHasher::Identity, position.to_ne_bytes()),
 		);
