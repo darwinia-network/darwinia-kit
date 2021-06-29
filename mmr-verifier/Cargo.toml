@@ -1,0 +1,13 @@
+[package]
+authors = ["Xavier Lau <c.estlavie@icloud.com>"]
+edition = "2018"
+name    = "mmr-verifier"
+version = "0.1.0"
+
+[dependencies]
+# crates.io
+array-bytes = { version = "1.3.3" }
+blake2-rfc  = { version = "0.2.18" }
+serde_json  = { version = "1.0.64" }
+# github.com
+mmr = { package = "ckb-merkle-mountain-range", git = "https://github.com/darwinia-network/merkle-mountain-range.git" }
