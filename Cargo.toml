@@ -1,5 +1,6 @@
 [workspace]
 members = [
+	"ci-bot",
 	"mmr-exporter",
 	"mmr-verifier",
 	"staking-ledger-checker",

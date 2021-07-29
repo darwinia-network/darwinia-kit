@@ -1,0 +1,11 @@
+[package]
+edition = "2018"
+name    = "ci-bot"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cargo_toml = { version = "0.9.2" }
+structopt  = { version = "0.3.22" }
+walkdir    = { version = "2.3.2" }
