@@ -95,6 +95,34 @@ impl Check for Checker {
 			println!("{}", format!("- {}", storage_prefix).red());
 		}
 
+		println!("Item Level Storage Changes:");
+		for (local_storages, chain_storages) in
+			local_storages.into_iter().filter_map(|local_storages| {
+				if let Some(chain_storages) = chain_storages
+					.iter()
+					.find(|chain_storages| &local_storages.prefix == &chain_storages.prefix)
+				{
+					Some((local_storages, chain_storages))
+				} else {
+					None
+				}
+			}) {
+			for storage in differentiate(
+				&local_storages.items,
+				&chain_storages.items,
+				|storage: &Storage| storage,
+			) {
+				println!("{}", format!("+ {:?}", storage).green());
+			}
+			for storage in differentiate(
+				&chain_storages.items,
+				&local_storages.items,
+				|storage: &Storage| storage,
+			) {
+				println!("{}", format!("- {:?}", storage).red());
+			}
+		}
+
 		local_node.kill()?;
 
 		Ok(())
