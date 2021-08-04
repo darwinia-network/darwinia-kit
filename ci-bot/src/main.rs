@@ -17,9 +17,12 @@ fn main() {
 
 	dbg!(&cli);
 
-	if let Err(e) = cli.checker.check() {
-		dbg!(e);
+	match cli.checker.check() {
+		Ok(exit_code) => process::exit(exit_code),
+		Err(e) => {
+			dbg!(e);
 
-		process::exit(1);
+			process::exit(-1);
+		}
 	}
 }

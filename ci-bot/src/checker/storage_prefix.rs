@@ -26,7 +26,7 @@ use arg::*;
 use std::{
 	convert::TryFrom,
 	path::PathBuf,
-	process::{Command, Stdio},
+	process::{Child, Command, Stdio},
 	thread,
 	time::Duration,
 };
@@ -48,29 +48,11 @@ pub struct Checker {
 	#[structopt(long)]
 	exec: PathBuf,
 }
-impl Check for Checker {
-	fn check(&self) -> AnyResult<()> {
-		const LOCAL_NODE_RPC_END_POINT: &str = "http://localhost:9933";
-
-		fn differentiate<'a, T, V, F>(a: &'a [T], b: &'a [T], f: F) -> Vec<&'a V>
-		where
-			V: 'a + PartialEq,
-			F: Fn(&'a T) -> &'a V + Copy,
-		{
-			b.iter()
-				.map(f)
-				.filter_map(|x| {
-					if a.iter().map(f).find(|y| x == *y).is_some() {
-						None
-					} else {
-						Some(x)
-					}
-				})
-				.collect()
-		}
-
+impl Checker {
+	fn spawn_local_node(&self) -> AnyResult<Child> {
 		println!("Spawning Local Node...");
-		let mut local_node = Command::new(&self.exec)
+
+		let local_node = Command::new(&self.exec)
 			.stdout(Stdio::null())
 			.stderr(Stdio::null())
 			.args(&["--chain", &format!("{}-dev", self.chain), "--tmp"])
@@ -78,79 +60,133 @@ impl Check for Checker {
 
 		thread::sleep(Duration::from_secs(3));
 
-		let local_storages = fetch_storages(LOCAL_NODE_RPC_END_POINT)?;
-		let chain_storages = fetch_storages(self.chain.rpc_endpoint())?;
+		Ok(local_node)
+	}
 
-		println!("Pallet Level Storage Changes:");
-		for storage_prefix in
-			differentiate(&chain_storages, &local_storages, |storages: &Storages| {
-				&storages.prefix
-			}) {
-			println!("{}", format!("+ {}", storage_prefix).green());
-		}
-		for storage_prefix in
-			differentiate(&local_storages, &chain_storages, |storages: &Storages| {
-				&storages.prefix
-			}) {
-			println!("{}", format!("- {}", storage_prefix).red());
+	fn fetch_storages(&self) -> AnyResult<(Vec<Storages>, Vec<Storages>)> {
+		const LOCAL_NODE_RPC_END_POINT: &str = "http://localhost:9933";
+
+		fn fetch_from(uri: impl AsRef<str>) -> AnyResult<Vec<Storages>> {
+			let metadata = {
+				let mut response =
+					subrpcer::send_rpc(uri, state::get_metadata())?.json::<Value>()?;
+				let hex_codec_metadata = response
+					.get_mut("result")
+					.map(|v| v.take())
+					.ok_or(AnyError::Custom(""))?
+					.as_str()
+					.map(ToOwned::to_owned)
+					.ok_or(AnyError::Custom(""))?;
+				let codec_metadata =
+					array_bytes::hex2bytes(hex_codec_metadata).map_err(|_| AnyError::Custom(""))?;
+				let metadata_prefixed = RuntimeMetadataPrefixed::decode(&mut &*codec_metadata)?;
+				let metadata = Metadata::try_from(metadata_prefixed.1)?;
+
+				metadata
+			};
+			let storages = metadata
+				.modules
+				.into_iter()
+				.filter_map(|module| module.storages)
+				.collect();
+
+			Ok(storages)
 		}
 
-		println!("Item Level Storage Changes:");
-		for (local_storages, chain_storages) in
-			local_storages.into_iter().filter_map(|local_storages| {
-				if let Some(chain_storages) = chain_storages
-					.iter()
-					.find(|chain_storages| &local_storages.prefix == &chain_storages.prefix)
-				{
-					Some((local_storages, chain_storages))
-				} else {
+		let local_storages = fetch_from(LOCAL_NODE_RPC_END_POINT)?;
+		let chain_storages = fetch_from(self.chain.rpc_endpoint())?;
+
+		Ok((local_storages, chain_storages))
+	}
+
+	fn differentiate<'a, T, V, F>(a: &'a [T], b: &'a [T], f: F) -> Vec<&'a V>
+	where
+		V: 'a + PartialEq,
+		F: Fn(&'a T) -> &'a V + Copy,
+	{
+		b.iter()
+			.map(f)
+			.filter_map(|x| {
+				if a.iter().map(f).find(|y| x == *y).is_some() {
 					None
+				} else {
+					Some(x)
 				}
+			})
+			.collect()
+	}
+
+	fn check_pallet(local_storages: &[Storages], chain_storages: &[Storages]) {
+		println!("Pallet Level Storage Change(s):");
+
+		for storage_prefix in
+			Self::differentiate(&chain_storages, &local_storages, |storages: &Storages| {
+				&storages.prefix
 			}) {
-			for storage in differentiate(
-				&local_storages.items,
-				&chain_storages.items,
-				|storage: &Storage| storage,
-			) {
-				println!("{}", format!("+ {:?}", storage).green());
+			println!("{}", format!("- Pallet: `{}`", storage_prefix).red());
+		}
+		for storage_prefix in
+			Self::differentiate(&local_storages, &chain_storages, |storages: &Storages| {
+				&storages.prefix
+			}) {
+			println!("{}", format!("+ Pallet: `{}`", storage_prefix).green());
+		}
+	}
+
+	fn check_item(local_storages: &[Storages], chain_storages: &[Storages]) {
+		println!("Item Level Storage Change(s):");
+
+		for (local_storages, chain_storages) in local_storages.iter().filter_map(|local_storages| {
+			if let Some(chain_storages) = chain_storages
+				.iter()
+				.find(|chain_storages| &local_storages.prefix == &chain_storages.prefix)
+			{
+				Some((local_storages, chain_storages))
+			} else {
+				None
 			}
-			for storage in differentiate(
+		}) {
+			for storage in Self::differentiate(
+				&local_storages.items,
+				&chain_storages.items,
+				|storage: &Storage| storage,
+			) {
+				println!(
+					"{}",
+					format!(
+						"- Pallet: `{}`, Item: `{:?}`",
+						chain_storages.prefix, storage
+					)
+					.red()
+				);
+			}
+			for storage in Self::differentiate(
 				&chain_storages.items,
 				&local_storages.items,
 				|storage: &Storage| storage,
 			) {
-				println!("{}", format!("- {:?}", storage).red());
+				println!(
+					"{}",
+					format!(
+						"+ Pallet: `{}`, Item: `{:?}`",
+						local_storages.prefix, storage
+					)
+					.green()
+				);
 			}
 		}
+	}
+}
+impl Check for Checker {
+	fn check(&self) -> AnyResult<i32> {
+		let mut local_node = self.spawn_local_node()?;
+		let (local_storages, chain_storages) = self.fetch_storages()?;
+
+		Self::check_pallet(&local_storages, &chain_storages);
+		Self::check_item(&local_storages, &chain_storages);
 
 		local_node.kill()?;
 
-		Ok(())
+		Ok(0)
 	}
-}
-
-fn fetch_storages(uri: impl AsRef<str>) -> AnyResult<Vec<Storages>> {
-	let metadata = {
-		let mut response = subrpcer::send_rpc(uri, state::get_metadata())?.json::<Value>()?;
-		let hex_codec_metadata = response
-			.get_mut("result")
-			.map(|v| v.take())
-			.ok_or(AnyError::Custom(""))?
-			.as_str()
-			.map(ToOwned::to_owned)
-			.ok_or(AnyError::Custom(""))?;
-		let codec_metadata =
-			array_bytes::hex2bytes(hex_codec_metadata).map_err(|_| AnyError::Custom(""))?;
-		let metadata_prefixed = RuntimeMetadataPrefixed::decode(&mut &*codec_metadata)?;
-		let metadata = Metadata::try_from(metadata_prefixed.1)?;
-
-		metadata
-	};
-	let storages = metadata
-		.modules
-		.into_iter()
-		.filter_map(|module| module.storages)
-		.collect();
-
-	Ok(storages)
 }

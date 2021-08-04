@@ -13,7 +13,7 @@ pub struct Checker {
 	project_dir: PathBuf,
 }
 impl Check for Checker {
-	fn check(&self) -> AnyResult<()> {
+	fn check(&self) -> AnyResult<i32> {
 		let dir_name = self
 			.project_dir
 			.file_name()
@@ -79,9 +79,9 @@ impl Check for Checker {
 				println!("Incomplete std feature found for `{}` at `{}`", alias, path);
 			}
 
-			Err(AnyError::Custom(""))?
+			Ok(1)
 		} else {
-			Ok(())
+			Ok(0)
 		}
 	}
 }

@@ -5,3 +5,6 @@ members = [
 	"mmr-verifier",
 	"staking-ledger-checker",
 ]
+
+# [patch.crates-io]
+# submetadatan = { path = "../../l2ust/subalfred/submetadatan" }

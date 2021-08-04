@@ -10,7 +10,7 @@ use structopt::StructOpt;
 use crate::AnyResult;
 
 pub trait Check {
-	fn check(&self) -> AnyResult<()>;
+	fn check(&self) -> AnyResult<i32>;
 }
 
 #[derive(Debug, StructOpt)]
@@ -19,7 +19,7 @@ pub enum Checker {
 	StoragePrefix(StoragePrefixChecker),
 }
 impl Check for Checker {
-	fn check(&self) -> AnyResult<()> {
+	fn check(&self) -> AnyResult<i32> {
 		match self {
 			Checker::DefaultFeatures(checker) => checker.check(),
 			Checker::StoragePrefix(checker) => checker.check(),
