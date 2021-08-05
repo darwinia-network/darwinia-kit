@@ -25,10 +25,9 @@ use arg::*;
 // --- std ---
 use std::{
 	convert::TryFrom,
+	io::{BufRead, BufReader},
 	path::PathBuf,
 	process::{Child, Command, Stdio},
-	thread,
-	time::Duration,
 };
 // --- crates.io ---
 use colored::Colorize;
@@ -52,13 +51,18 @@ impl Checker {
 	fn spawn_local_node(&self) -> AnyResult<Child> {
 		println!("Spawning Local Node...");
 
-		let local_node = Command::new(&self.exec)
+		let mut local_node = Command::new(&self.exec)
 			.stdout(Stdio::null())
-			.stderr(Stdio::null())
+			.stderr(Stdio::piped())
 			.args(&["--chain", &format!("{}-dev", self.chain), "--tmp"])
 			.spawn()?;
+		let output = BufReader::new(local_node.stderr.take().ok_or(AnyError::Custom(""))?);
 
-		thread::sleep(Duration::from_secs(3));
+		for line in output.lines().filter_map(Result::ok) {
+			if line.contains("Idle") {
+				break;
+			}
+		}
 
 		Ok(local_node)
 	}

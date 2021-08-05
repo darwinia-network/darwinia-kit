@@ -28,7 +28,7 @@ impl Check for Checker {
 			.filter_entry(|entry| {
 				let name = entry.file_name().to_str().unwrap();
 
-				name != "target" && !(name.starts_with('.') && !name.starts_with("./"))
+				name != "target" && !name.starts_with('.') && !name.starts_with("./")
 			})
 			.filter_map(|entry| entry.ok())
 		{

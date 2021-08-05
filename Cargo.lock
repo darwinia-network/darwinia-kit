@@ -312,7 +312,7 @@ dependencies = [
  "structopt",
  "submetadatan",
  "subrpcer 0.3.2",
- "substorager 0.2.0",
+ "substorager 0.3.0",
  "thiserror",
  "walkdir",
 ]
@@ -1216,16 +1216,6 @@ name = "substorager"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9300f5f3c1dbec20a2ca5140f9a8625967321f7ba558ce5922761b0c9eacd583"
-dependencies = [
- "array-bytes",
- "subhasher",
-]
-
-[[package]]
-name = "substorager"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e25292b791d9a18dc86e8a8cea8c047e7b026adbdfe99070236298d0a0cac30f"
 dependencies = [
  "array-bytes",
  "subhasher",
