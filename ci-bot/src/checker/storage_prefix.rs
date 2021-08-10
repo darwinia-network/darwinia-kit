@@ -124,13 +124,13 @@ impl Checker {
 		println!("Pallet Level Storage Change(s):");
 
 		for storage_prefix in
-			Self::differentiate(&chain_storages, &local_storages, |storages: &Storages| {
+			Self::differentiate(&local_storages, &chain_storages, |storages: &Storages| {
 				&storages.prefix
 			}) {
 			println!("{}", format!("- Pallet: `{}`", storage_prefix).red());
 		}
 		for storage_prefix in
-			Self::differentiate(&local_storages, &chain_storages, |storages: &Storages| {
+			Self::differentiate(&chain_storages, &local_storages, |storages: &Storages| {
 				&storages.prefix
 			}) {
 			println!("{}", format!("+ Pallet: `{}`", storage_prefix).green());
