@@ -47,7 +47,7 @@ impl Check for Checker {
 												.path()
 												.to_str()
 												.unwrap()
-												.split(dir_name)
+												.splitn(2, dir_name)
 												.last()
 												.unwrap()
 												.to_owned(),
