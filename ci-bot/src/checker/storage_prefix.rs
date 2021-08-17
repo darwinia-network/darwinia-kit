@@ -36,7 +36,7 @@ use structopt::StructOpt;
 use submetadatan::{
 	parity_scale_codec::Decode, Metadata, RuntimeMetadataPrefixed, Storage, Storages,
 };
-use subrpcer::{isahc::ReadResponseExt, state};
+use subrpcer::{client::u as ureq, state};
 // --- ci-bot ---
 use crate::{checker::Check, AnyError, AnyResult};
 
@@ -73,7 +73,7 @@ impl Checker {
 		fn fetch_from(uri: impl AsRef<str>) -> AnyResult<Vec<Storages>> {
 			let metadata = {
 				let mut response =
-					subrpcer::send_rpc(uri, state::get_metadata())?.json::<Value>()?;
+					ureq::send_rpc(uri, state::get_metadata())?.into_json::<Value>()?;
 				let hex_codec_metadata = response
 					.get_mut("result")
 					.map(|v| v.take())
